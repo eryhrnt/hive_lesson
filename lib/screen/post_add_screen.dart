@@ -96,13 +96,17 @@ class _PostAddScreenState extends State<PostAddScreen> {
                           );
                           Navigator.pop(context);
                         },
-                      ).onError((error, stackTrace) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(error.toString()),
-                          ),
-                        );
-                      });
+                      ).onError(
+                        (error, stackTrace) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                error.toString(),
+                              ),
+                            ),
+                          );
+                        },
+                      );
                     }
                   },
                   child: const Text('Submit'),
