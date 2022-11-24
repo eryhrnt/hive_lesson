@@ -26,7 +26,6 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void initState() {
-    // _post = widget.post;
     super.initState();
   }
 
@@ -34,7 +33,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail'),
+        title: Text(widget.title),
         actions: [
           IconButton(
             onPressed: () {

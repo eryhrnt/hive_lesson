@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_lesson/model/post.dart';
+import 'package:hive_lesson/screen/post_list_screen.dart';
 
 class PostAddScreen extends StatefulWidget {
   const PostAddScreen({super.key});
@@ -38,18 +39,18 @@ class _PostAddScreenState extends State<PostAddScreen> {
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Title'),
               ),
-              const SizedBox(height: 30),
               TextField(
                 controller: _authorController,
                 decoration: const InputDecoration(labelText: 'Author'),
               ),
-              const SizedBox(height: 30),
               TextField(
                 controller: _contentController,
                 decoration: const InputDecoration(labelText: 'Content'),
               ),
-              const SizedBox(height: 50),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  fixedSize: const Size(100, 40),
+                ),
                 onPressed: () {
                   final value = Post(
                     title: _titleController.text,
@@ -59,6 +60,12 @@ class _PostAddScreenState extends State<PostAddScreen> {
 
                   Hive.box('posts').add(value);
                   print('Submit');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PostListScreen(),
+                    ),
+                  );
                 },
                 child: const Text('Submit'),
               ),

@@ -76,6 +76,9 @@ class _PostEditScreenState extends State<PostEditScreen> {
               ),
               const SizedBox(height: 50),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  fixedSize: const Size(100, 40),
+                ),
                 onPressed: () {
                   final value = Post(
                     title: _titleController.text,
