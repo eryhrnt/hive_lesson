@@ -1,118 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hive_lesson/model/constant.dart' as constant;
+import 'package:hive/hive.dart';
 import 'package:hive_lesson/model/post.dart';
 
 class PostAddScreen extends StatefulWidget {
-  const PostAddScreen({Key? key}) : super(key: key);
+  const PostAddScreen({super.key});
 
   @override
   State<PostAddScreen> createState() => _PostAddScreenState();
 }
 
 class _PostAddScreenState extends State<PostAddScreen> {
-  final _title = TextEditingController();
-  final _author = TextEditingController(text: 'Ery H.');
-  final _content = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _authorController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _authorController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Post'),
+        title: const Text('Create Post'),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: _title,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    hintText: 'Type your title here',
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Title required';
-                    }
-                    return null;
-                  },
-                  onSaved: (v) {},
-                ),
-                TextFormField(
-                  enabled: false,
-                  controller: _author,
-                  decoration: const InputDecoration(
-                    labelText: 'Author',
-                    hintText: 'Type your title here',
-                  ),
-                ),
-                TextFormField(
-                  controller: _content,
-                  decoration: const InputDecoration(
-                    labelText: 'Content',
-                    hintText: 'Type your content here',
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Title required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(100, 40),
-                  ),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      late Box<Post> openBox;
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              const SizedBox(height: 30),
+              TextField(
+                controller: _authorController,
+                decoration: const InputDecoration(labelText: 'Author'),
+              ),
+              const SizedBox(height: 30),
+              TextField(
+                controller: _contentController,
+                decoration: const InputDecoration(labelText: 'Content'),
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  final value = Post(
+                    title: _titleController.text,
+                    author: _authorController.text,
+                    content: _contentController.text,
+                  );
 
-                      final isOpen = Hive.isBoxOpen(constant.postBox);
-
-                      if (isOpen) {
-                        openBox = Hive.box(constant.postBox);
-                      } else {
-                        openBox = await Hive.openBox(constant.postBox);
-                      }
-
-                      final post = Post(
-                        _title.text,
-                        _author.text,
-                        _content.text,
-                      );
-                      openBox.add(post).then(
-                        (id) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Post created with id $id'),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        },
-                      ).onError(
-                        (error, stackTrace) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                error.toString(),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }
-                  },
-                  child: const Text('Submit'),
-                ),
-              ],
-            ),
+                  Hive.box('posts').add(value);
+                  print('Submit');
+                },
+                child: const Text('Submit'),
+              ),
+            ],
           ),
         ),
       ),

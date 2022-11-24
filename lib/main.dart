@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_lesson/screen/post_add_screen.dart';
+import 'package:hive_lesson/screen/post_list_screen.dart';
 import 'package:path_provider/path_provider.dart' as path;
 import 'package:hive_lesson/model/post.dart';
-import 'package:hive_lesson/screen/post_list_screen.dart';
+//import 'package:hive_lesson/screen/post_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

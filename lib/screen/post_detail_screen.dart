@@ -1,19 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:hive_lesson/model/post.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_lesson/screen/post_add_screen.dart';
+import 'package:hive_lesson/screen/post_edit_screen.dart';
 
-class PostDetailScreen extends StatelessWidget {
+import '../model/post.dart';
+
+class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({
-    Key? key,
-    required this.post,
-  }) : super(key: key);
+    super.key,
+    required this.title,
+    required this.author,
+    required this.content,
+    required this.index,
+  });
 
-  final Post post;
+  final String title;
+  final String author;
+  final String content;
+  final int index;
+
+  @override
+  State<PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends State<PostDetailScreen> {
+  @override
+  void initState() {
+    // _post = widget.post;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(post.title),
+        title: Text('Detail'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PostEditScreen(
+                    title: widget.title,
+                    author: widget.author,
+                    content: widget.content,
+                    index: widget.index,
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.edit),
+          ),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -21,13 +60,13 @@ class PostDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              post.title,
+              widget.title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              post.author,
+              widget.author,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
@@ -35,7 +74,7 @@ class PostDetailScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            Text(post.content),
+            Text(widget.content),
           ],
         ),
       ),

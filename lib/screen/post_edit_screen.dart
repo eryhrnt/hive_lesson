@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_lesson/model/constant.dart' as constant;
-
-import '../model/post.dart';
+import 'package:hive_lesson/model/post.dart';
 
 class PostEditScreen extends StatefulWidget {
-  const PostEditScreen({
-    super.key,
-    required this.post,
-  });
+  const PostEditScreen(
+      {super.key,
+      required this.title,
+      required this.author,
+      required this.content,
+      required this.index});
 
-  final Post post;
-
+  final String title;
+  final String author;
+  final String content;
+  final int index;
   @override
   State<PostEditScreen> createState() => _PostEditScreenState();
 }
@@ -23,9 +25,9 @@ class _PostEditScreenState extends State<PostEditScreen> {
 
   @override
   void initState() {
-    _titleController.text = widget.post.title;
-    _authorController.text = widget.post.author;
-    _contentController.text = widget.post.content;
+    _titleController.text = widget.title;
+    _authorController.text = widget.author.toString();
+    _contentController.text = widget.content.toString();
     super.initState();
   }
 
@@ -41,49 +43,49 @@ class _PostEditScreenState extends State<PostEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit ${widget.post.title}'),
+        title: const Text('Update Data'),
       ),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Form(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
                   labelText: 'Title',
-                  hintText: widget.post.title,
+                  hintText: widget.title,
                 ),
               ),
-              TextFormField(
-                enabled: false,
+              const SizedBox(height: 20),
+              TextField(
                 controller: _authorController,
                 decoration: InputDecoration(
                   labelText: 'Author',
-                  hintText: widget.post.author,
+                  hintText: widget.author,
                 ),
               ),
-              TextFormField(
+              const SizedBox(height: 20),
+              TextField(
                 controller: _contentController,
                 decoration: InputDecoration(
                   labelText: 'Content',
-                  hintText: widget.post.content,
+                  hintText: widget.content,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 50),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  fixedSize: const Size(100, 40),
-                ),
-                onPressed: () async {
+                onPressed: () {
                   final value = Post(
-                    widget.post.title,
-                    widget.post.author,
-                    widget.post.content,
+                    title: _titleController.text,
+                    author: _authorController.text,
+                    content: _contentController.text,
                   );
+
+                  Hive.box('posts').putAt(widget.index, value);
                 },
-                child: Text('Save'),
+                child: const Text('Update'),
               ),
             ],
           ),

@@ -8,7 +8,7 @@ part of 'post.dart';
 
 class PostAdapter extends TypeAdapter<Post> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
   Post read(BinaryReader reader) {
@@ -17,9 +17,9 @@ class PostAdapter extends TypeAdapter<Post> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Post(
-      fields[0] as String,
-      fields[1] as String,
-      fields[2] as String,
+      title: fields[0] as String,
+      author: fields[1] as String,
+      content: fields[2] as String,
     );
   }
 

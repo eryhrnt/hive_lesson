@@ -1,46 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_lesson/model/constant.dart' as c;
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_lesson/model/post.dart';
 import 'package:hive_lesson/screen/post_add_screen.dart';
 import 'package:hive_lesson/screen/post_detail_screen.dart';
-import 'package:hive_lesson/screen/post_edit_screen.dart';
 
 class PostListScreen extends StatefulWidget {
-  const PostListScreen({Key? key}) : super(key: key);
+  const PostListScreen({super.key});
 
   @override
   State<PostListScreen> createState() => _PostListScreenState();
 }
 
 class _PostListScreenState extends State<PostListScreen> {
-  final List<Post> _posts = [];
-
-  @override
-  void initState() {
-    super.initState();
-    Hive.openBox<Post>(c.postBox).then(
-      (box) {
-        _posts.addAll(
-          box.values.map(
-            (e) {
-              final newPost = Post(
-                e.title,
-                e.author,
-                e.content,
-                id: e.key,
-              );
-              return newPost;
-            },
-          ).toList(),
-        );
-      },
-    );
-  }
-
+  final List<Post> _post = [];
   @override
   void dispose() {
-    Hive.close();
+    Hive.box('posts').close();
+    //or
+    //Close all boxes
+    // Hive.close();
     super.dispose();
   }
 
@@ -48,136 +27,112 @@ class _PostListScreenState extends State<PostListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Post List'),
+        title: const Text('Show Data'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              //Delete All Box
+              Hive.box('posts').clear();
+            },
+            icon: const Icon(Icons.delete_forever),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context)
-              .push(
+          Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => const PostAddScreen(),
+              builder: (context) => const PostAddScreen(),
             ),
-          )
-              .then(
-            (value) async {
-              // await Hive.close();
-              late Box<Post> box;
-              if (Hive.isBoxOpen(c.postBox)) {
-                box = Hive.box(c.postBox);
-              } else {
-                box = await Hive.openBox(c.postBox);
-              }
-
-              _posts
-                ..clear()
-                ..addAll(
-                  box.values.map(
-                    (e) {
-                      final newPost = Post(
-                        e.title,
-                        e.author,
-                        e.content,
-                        id: e.key,
-                      );
-                      return newPost;
-                    },
-                  ).toList(),
-                );
-              setState(() {});
-            },
           );
         },
         child: const Icon(Icons.add),
       ),
-      body: ListView.separated(
-        itemBuilder: (context, i) {
-          return ListTile(
-            leading: IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: ((context) => PostEditScreen(
-                          post: _posts[i],
-                        )),
-                  ),
-                );
+      body: FutureBuilder(
+        future: Hive.openBox('posts'),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            final hiveBox = Hive.box('posts');
+            return ValueListenableBuilder(
+              valueListenable: hiveBox.listenable(),
+              builder: (context, Box box, child) {
+                if (box.isEmpty) {
+                  return const Center(
+                    child: Text('Empty'),
+                  );
+                } else {
+                  return ListView.separated(
+                    itemCount: hiveBox.length,
+                    itemBuilder: (context, index) {
+                      final helper = hiveBox.getAt(index) as Post;
+                      return ListTile(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PostDetailScreen(
+                              title: helper.title,
+                              author: helper.author,
+                              content: helper.content,
+                              index: index,
+                            ),
+                          ),
+                        ),
+                        trailing: IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              useSafeArea: true,
+                              builder: (context) => AlertDialog(
+                                scrollable: true,
+                                title: const Text('Delete'),
+                                content: const Text('Do you want delete it?'),
+                                actions: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                    onPressed: () {
+                                      hiveBox.deleteAt(index);
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text(
+                                      'Delete it',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Return'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+                        ),
+                        title: Text(helper.title),
+                        subtitle: Text('Author: ${helper.author}'),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) =>
+                        Divider(),
+                  );
+                }
               },
-            ),
-            title: Text('${_posts[i].title} (${_posts[i].id})'),
-            subtitle: Text(_posts[i].author),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PostDetailScreen(
-                  post: _posts[i],
-                ),
-              ),
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () async {
-                await showDialog<bool?>(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text('Delete ${_posts[i].title} ?'),
-                    content: Text(
-                      'Are you sure want to delete ${_posts[i].title} ?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, false);
-                        },
-                        child: Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                        },
-                        child: Text('Yes'),
-                      ),
-                    ],
-                  ),
-                ).then(
-                  (result) async {
-                    if (result != null && result) {
-                      late Box<Post> openBox;
-
-                      final isOpen = Hive.isBoxOpen(c.postBox);
-
-                      if (isOpen) {
-                        openBox = Hive.box(c.postBox);
-                      } else {
-                        openBox = await Hive.openBox(c.postBox);
-                      }
-
-                      await openBox.delete(_posts[i].id);
-                      _posts
-                        ..clear()
-                        ..addAll(
-                          openBox.values.map(
-                            (e) {
-                              final newPost = Post(
-                                e.title,
-                                e.author,
-                                e.content,
-                                id: e.key,
-                              );
-                              return newPost;
-                            },
-                          ).toList(),
-                        );
-                      setState(() {});
-                    }
-                  },
-                );
-              },
-            ),
-          );
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
-        separatorBuilder: (context, i) => Divider(),
-        itemCount: _posts.length,
       ),
     );
   }
